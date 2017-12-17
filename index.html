@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+  <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>NearByke</title>
+  <meta name="description" content="NearByke is a young startup revolutionizing bike share systems.">
+
+  <link rel="stylesheet" href="assets/stylesheets/site.css">
+  <link rel="canonical" href="index.html">
+  <link rel="alternate" type="application/rss+xml" title="NearByke" href="feed.html">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="mask-icon" href="safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="../unpkg.com/leaflet%401.2.0/dist/leaflet.css"
+  integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+  crossorigin=""/>
+  <script src="../unpkg.com/leaflet%401.2.0/dist/leaflet.js"
+  integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+  crossorigin=""></script>
+  <!--<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?">-->
+  
+  
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','../www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-96006119-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+  
+
+  
+
+
+  <meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@NearByke">
+<meta name="twitter:creator" content="@NearByke">
+
+  <meta name="twitter:title" content="NearByke">
+
+
+  <meta name="twitter:url" content="http://nearbyke.com/">
+
+
+  <meta name="twitter:description" content="NearByke is a young startup revolutionizing bike share systems.">
+
+
+  <meta name="twitter:image:src" content="http://nearbyke.com/assets/images/HeaderText.JPG">
+
+</head>
+
+
+  <body>
+
+    <main aria-label="Content">
+      <div class="wrapper">
+
+<div id="home">
+
+	<!--<div id="map" class="parallax-container" data-parallax="scroll" data-image-src="assets/images/Header.jpg" data-natural-height="1125" data-natural-width="1688" data-bleed="10">-->
+	
+	<div id="base_info" class="jumbotron">	
+		<div id="map" style="height: 100vh; width: 100%">Loading map...</div>
+		<div id="intro" style="z-index: 9999">
+			<img id="logo" src="assets/images/NearByke_logo.svg" alt="NearByke logo">
+			<h1 id="name"><span class="near">NEAR</span><span class="byke">BYKE</span></h1>
+			<!--<h2 id="slogan">Always a bike nearby</h2>-->
+		</div>
+		<div id="info" style="z-index: 999">
+			<p>A lot of bike share systems suffer from a rebalancing problem. NearByke solves this problem in a green and cost effective way, by incentivizing users to redistribute the bikes themselves.</p>
+			<p>This live map demonstrates the rebalancing problem in Paris:</p>
+			<p>Total stations: <span id="stations_total"></span></p>
+			<p>Full stations: <span id="stations_full"></span></p>
+			<p>Empty stations: <span id="stations_empty"></span></p>
+		</div>
+		<div id="last_updated" style="z-index: 999">
+			<p>Last updated on: <span id="updated_on"></span></p>
+		</div>
+		<img id="arrow-down" src="assets/images/arrow_down.svg">
+	</div>
+	<!--</div>-->
+	
+  	<script src="../ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  	<!--<script src="/assets/scripts/parallax.js"></script>-->
+
+  	<script>
+  		var colors = {
+  			'regular': '#00ACC1', //'#007C91',
+			'full':  '#424242', //'#00ACC1',
+			'empty': '#B71C1C' //'#424242'
+		}
+	    var mymap = '';
+	    var stationsmeta = '';
+	    $.ajax({
+	        url: 'http://35.201.127.153/system/0002/stations',
+	        dataType: 'json',
+	        success: function(stations) {
+	            stationsmeta = stations
+	            var minlat = 91;
+	            var maxlat = -91;
+	            var minlng = 181;
+	            var maxlng = -181;
+	            for (i = 0; i < stations.length; i++) { 
+	                if (stations[i].lat < minlat) {
+	                    minlat = stations[i].lat;
+	                }
+	                if (stations[i].lat > maxlat) {
+	                    maxlat = stations[i].lat;
+	                }
+	                if (stations[i].lng < minlng) {
+	                    minlng = stations[i].lng;
+	                }
+	                if (stations[i].lng > maxlng) {
+	                    maxlng = stations[i].lng;
+	                }
+	            }
+	            minlat = Number(minlat)
+	            maxlat = Number(maxlat)
+	            minlng = Number(minlng)
+	            maxlng = Number(maxlng)
+	            centerlat = (minlat + maxlat)/2;
+	            centerlng = (minlng + maxlng)/2;
+
+	            mymap = L.map('base_info', {
+	                center: [centerlat, centerlng], 
+	                zoom: 13,
+	                scrollWheelZoom: false,
+	                dragging: !L.Browser.mobile,
+	                tap: !L.Browser.mobile
+	            });
+
+
+	            L.tileLayer('../api.tiles.mapbox.com/v4/%7bid%7d/%7bz%7d/%7bx%7d/%7by%7dafd4.json?access_token={accessToken}', {
+	                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+	                maxZoom: 18,
+	                id: 'mapbox.light',
+	                accessToken: 'pk.eyJ1IjoibmVhcmJ5a2UiLCJhIjoiY2o5d2w0YXJvNGgxejJxcGhwdmF0NjcwMiJ9.vam3m5kp9Xfj6Xgu1n5Dzg'
+	            }).addTo(mymap);
+
+	            ajax_call();
+				setInterval(ajax_call, 1000*60);
+	        }
+	    });
+
+	    var circles = new Array();
+	    var ajax_call = function() {
+	  		$.ajax({
+                url: 'http://35.201.127.153/system/0002/stations/occupancy',
+                dataType: 'json',
+                success: function(stations) {
+			    	for (circle in circles) {
+			    		mymap.removeLayer(circles[circle]);
+			    	}
+			    	circles = new Array();
+                	var stations_full = 0;
+                	var stations_empty = 0;    
+                    for (i = 0; i < stationsmeta.length; i++) {
+                        var id = stationsmeta[i].id.toString();
+                        if (Number(stationsmeta[i]) != 0) {
+                            var occupancy = Number(stations[id])/Number(stationsmeta[i].capacity);
+                            var bordercolor = colors['regular']
+                            var color = colors['regular'];
+                            var oppacity = 0.5;
+                            if (occupancy < 0.05) {
+                            	color = colors['empty']
+	                            oppacity = 0.8;
+	                            if (occupancy == 0) {
+	                            	bordercolor = colors['empty'];
+	                            	stations_empty++
+	                            }
+	                        }
+	                        else if (occupancy > 0.95) {
+	                        	color = colors['full']
+                            	oppacity = 0.8;
+                            	if (occupancy == 1) {
+                            		bordercolor = colors['full'];
+                            		stations_full++
+                            	}
+                        	}
+                            var circle = L.circle([stationsmeta[i].lat, stationsmeta[i].lng], {
+                                color: bordercolor,
+                                fillColor: color,
+                                fillOpacity: oppacity,
+                                radius: Number(stationsmeta[i].capacity) * 2
+                            }).bindTooltip(stationsmeta[i].name.split(' - ')[1] + ': ' + stations[id].toString() + '/' + stationsmeta[i].capacity.toString()).addTo(mymap);
+                            circles.push(circle)
+                        }
+                    }
+                    now = new Date()
+                    document.getElementById("updated_on").textContent= now.toUTCString();
+                    document.getElementById("stations_total").textContent= stationsmeta.length;
+                    document.getElementById("stations_full").textContent= stations_full	+ ' (' + Math.round(100 * stations_full/stationsmeta.length) + '%)';
+                    document.getElementById("stations_empty").textContent= stations_empty + ' (' + Math.round(100 * stations_empty/stationsmeta.length) + '%)';
+                }
+            })
+		};
+	</script>
+
+	<div id="main_home">
+		<div id="posts"class="container">
+
+			<h2 id="news">News</h2>
+
+			
+				<div class="post-preview">
+	<a class="title-link" href="2017/11/13/NearByke-made-it-to-the-top-10-finalists-of-the-Paris-Living-City-Awards.html">
+		<div>
+			<h3 class="post-preview-title">NearByke made it to the final of the Paris Living City Awards</h3>
+			<h4 class="post-preview-date">13 November 2017</h4>
+		</div>
+		<img src="assets/images/grandprix.png"/>
+	</a>
+		<p>We are pleased to announce that NearByke made it to the <a href="http://www.grandsprixinnovation.paris/en/gpi115-paris-living-city-awards.html">top 10 of the Paris Living City Awards</a>, an international startup competition that is part of <a href="http://www.grandsprixinnovation.paris/en/">Grands Prix de L’Innovation</a>.</p>
+
+
+	<a href="2017/11/13/NearByke-made-it-to-the-top-10-finalists-of-the-Paris-Living-City-Awards.html">
+		<p>Read more</p>
+	</a>
+</div>
+			
+				<div class="post-preview">
+	<a class="title-link" href="2017/05/31/NearByke-gets-accepted-to-StartIt-%40KBC.html">
+		<div>
+			<h3 class="post-preview-title">NearByke gets selected for Start it @kbc</h3>
+			<h4 class="post-preview-date">31 May 2017</h4>
+		</div>
+		<img src="assets/images/Startit.jpg"/>
+	</a>
+		<p>We are happy to anounce that NearByke has been selected to be a part of the Start it @kbc community.
+NearByke entered the incubator programme in May and will be part of it for 12 to 18 months.</p>
+
+
+	<a href="2017/05/31/NearByke-gets-accepted-to-StartIt-%40KBC.html">
+		<p>Read more</p>
+	</a>
+</div>
+			
+				<div class="post-preview">
+	<a class="title-link" href="2017/03/27/NearByke-gets-accepted-to-Watt-Factory-Accelerator.html">
+		<div>
+			<h3 class="post-preview-title">NearByke gets selected for the Watt Factory Accelerator programme</h3>
+			<h4 class="post-preview-date">27 March 2017</h4>
+		</div>
+		<img src="assets/images/Watt.jpg"/>
+	</a>
+		<p>NearByke was selected as 1 of 13 promising startups to take part in the first Watt Factory Accelerator programme.
+NearByke was chosen in the domain of Smart Mobility and will be guided on their path towards funding through an individualised programme working on access to funding, customers &amp; partners.</p>
+
+
+	<a href="2017/03/27/NearByke-gets-accepted-to-Watt-Factory-Accelerator.html">
+		<p>Read more</p>
+	</a>
+</div>
+			
+				<div class="post-preview">
+	<a class="title-link" href="2017/03/20/NearByke-wins-the-AE-Car-Challenge-Smart-Cities.html">
+		<div>
+			<h3 class="post-preview-title">Nearbyke wins the AE Car Challenge: Smart Cities</h3>
+			<h4 class="post-preview-date">20 March 2017</h4>
+		</div>
+		<img src="assets/images/AE.jpg"/>
+	</a>
+		<p>Nearbyke has won the AE Car Challenge, which this year focussed on Smart Cities.
+Nearbyke’s pitch about their new free-floating bike share system with a unique payment model was elected as winner by the jury.</p>
+
+
+	<a href="2017/03/20/NearByke-wins-the-AE-Car-Challenge-Smart-Cities.html">
+		<p>Read more</p>
+	</a>
+</div>
+			
+		</div>
+
+		<footer>
+
+	<div id="contact">
+		<h1 class="title_white">Contact</h1>
+
+		<ul id="contact_icons">
+		    <li>
+		      <a href="https://www.facebook.com/NearByke/?fref=ts" target="_blank">
+		        <img src="assets/images/icon_fb.svg" alt="facebook icon"/>
+		      </a>
+		    </li>
+		    <li>
+		      <a href="https://twitter.com/NearByke" target="_blank">
+		        <img src="assets/images/icon_twitter.svg" alt="facebook icon"/>
+		      </a>
+		    </li>
+		    <li>
+		      <a href="https://www.linkedin.com/company/nearbyke" target="_blank">
+		        <img src="assets/images/icon_linkedin.svg" alt="facebook icon"/>
+		      </a>
+		    </li>
+		    <li>
+		      <a href="mailto:info@nearbyke.me" target="_blank">
+		        <img src="assets/images/icon_mail.svg" alt="mail icon"/>
+		      </a>
+		    </li>
+	  	</ul>
+  	</div>
+
+</footer>
+	</div>
+
+	<!--<div id="parallax-intermezzo" data-parallax="scroll" data-image-src="assets/images/Intermezzo.jpg" data-natural-height="1125" data-natural-width="1688" data-bleed="10">-->
+
+</div>
+      </div>
+    </main>
+
+  </body>
+
+</html>
